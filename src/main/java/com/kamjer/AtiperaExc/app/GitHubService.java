@@ -1,23 +1,18 @@
 package com.kamjer.AtiperaExc.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kamjer.AtiperaExc.app.DTO.BranchDTO;
 import com.kamjer.AtiperaExc.app.DTO.RepositoryDTO;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -26,10 +21,13 @@ public class GitHubService {
     @Value("${github.api.base-url}")
     private String githubApiBaseUrl;
 
+    @Value("${github.api.base-url}")
+    private String notFoundMassage;
+
     private Logger log = Logger.getLogger(GitHubService.class.getName());
 
 
-    public ResponseEntity<List<RepositoryDTO>> getGitHubRepository(String owner) {
+    public ResponseEntity<List<RepositoryDTO>> getGitHubRepository(String owner) throws RestClientException {
 //        creating template
         RestTemplate restTemplate = new RestTemplate();
 //        building url for api
