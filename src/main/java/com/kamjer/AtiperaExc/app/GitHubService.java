@@ -21,28 +21,35 @@ public class GitHubService {
     @Value("${github.api.base-url}")
     private String githubApiBaseUrl;
 
-    @Value("${github.api.base-url}")
-    private String notFoundMassage;
+    @Value("${github.accept.value}")
+    private String acceptValueGitHubApi;
 
     private Logger log = Logger.getLogger(GitHubService.class.getName());
 
 
-    public ResponseEntity<List<RepositoryDTO>> getGitHubRepository(String owner) throws RestClientException {
+    public ResponseEntity<List<RepositoryDTO>> getGitHubRepository(String token, String owner) throws RestClientException {
 //        creating template
         RestTemplate restTemplate = new RestTemplate();
 //        building url for api
-        StringBuilder bd = new StringBuilder();
-        bd.append(githubApiBaseUrl)
-                .append("/users")
+        StringBuilder bd = new StringBuilder(githubApiBaseUrl);
+        bd.append("/users")
                 .append("/")
                 .append(owner)
                 .append("/repos");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(MediaType.parseMediaTypes(acceptValueGitHubApi));
+        if (!token.isEmpty()) {
+            headers.setBearerAuth(token);
+        }
+
+        RequestEntity<Void> requestEntity = RequestEntity.get(bd.toString()).headers(headers).build();
 
         log.info(bd.toString());
 //        fetching necceserry data from response
 //        fetching owner and repository name
         ResponseEntity<List<RepositoryDTO>> responseStringRepositories = restTemplate
-                .exchange(bd.toString(), HttpMethod.GET, null, new ParameterizedTypeReference<>() {} );
+                .exchange(bd.toString(), HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {} );
 
         List<RepositoryDTO> filteredRepos = Optional.ofNullable(responseStringRepositories.getBody()).orElse(new ArrayList<>())
                 .stream()
@@ -59,7 +66,6 @@ public class GitHubService {
     }
 
     public ResponseEntity<List<BranchDTO>> getBranchesForRepo(String owner, String repoName) {
-//        https://api.github.com/repos/KamJer/EndianUtilities/branches
         RestTemplate restTemplate = new RestTemplate();
 
         StringBuilder bd = new StringBuilder();

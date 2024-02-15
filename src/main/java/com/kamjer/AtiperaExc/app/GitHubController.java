@@ -33,11 +33,19 @@ public class GitHubController {
         this.service = service;
     }
 
-    @GetMapping(path = "/{owner}/repos")
-        public ResponseEntity<?> getRepositoryFromOwner(@RequestHeader(value = HttpHeaders.ACCEPT) String headerValue, @PathVariable String owner) throws ErrorResponseException, RestClientException {
+    @GetMapping(path = "/auth/{owner}/repos")
+        public ResponseEntity<?> getRepositoryFromOwner(@RequestHeader(value = HttpHeaders.ACCEPT) String headerValue, @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token, @PathVariable String owner) throws ErrorResponseException, RestClientException {
         if (!headerValue.equals(acceptedHeaderValue)) {
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, otAcceptableMessage);
         }
-        return service.getGitHubRepository(owner);
+        return service.getGitHubRepository(token, owner);
+    }
+
+    @GetMapping(path = "/{owner}/repos")
+    public ResponseEntity<?> getRepositoryFromOwner(@RequestHeader(value = HttpHeaders.ACCEPT) String headerValue, @PathVariable String owner) throws ErrorResponseException, RestClientException {
+        if (!headerValue.equals(acceptedHeaderValue)) {
+            throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, otAcceptableMessage);
+        }
+        return service.getGitHubRepository("", owner);
     }
 }
