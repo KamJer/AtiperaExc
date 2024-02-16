@@ -53,6 +53,6 @@ public class GitHubController {
         if (!headerValue.equals(acceptedHeaderValue)) {
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, notAcceptableMessage);
         }
-        return new ResponseEntity<>(gitHubService.getGitHubRepository("", owner),HttpStatus.OK);
+        return new ResponseEntity<>(gitHubService.getGitHubRepository(owner),HttpStatus.OK);
     }
 }

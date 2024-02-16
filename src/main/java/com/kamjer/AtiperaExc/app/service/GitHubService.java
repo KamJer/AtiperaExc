@@ -25,8 +25,14 @@ public class GitHubService {
     }
 
     public List<RepositoryResponse> getGitHubRepository(String token, String owner) throws RestClientException {
-//        fetching necceserry data from response
-//        fetching owner and repository name
+        return getGitHubRepositoryToken(Optional.of(token), owner);
+    }
+
+    public List<RepositoryResponse> getGitHubRepository(String owner) throws RestClientException {
+        return getGitHubRepositoryToken(Optional.empty(), owner);
+    }
+
+    private List<RepositoryResponse> getGitHubRepositoryToken(Optional<String> token, String owner) throws RestClientException {
         ResponseEntity<List<RepositoryDto>> responseRepositories = gitHubClient.getGitHubRepositories(token, owner);
 
         return Optional.ofNullable(responseRepositories.getBody()).orElse(new ArrayList<>())
@@ -40,7 +46,10 @@ public class GitHubService {
                 .toList();
     }
 
-    protected List<BranchDto> getBranchesForRepo(String owner, String repoName) {
+
+
+
+        protected List<BranchDto> getBranchesForRepo(String owner, String repoName) {
         ResponseEntity<List<BranchDto>> branchDtoResponseEntity = gitHubClient.getGitHubBranches(owner, repoName);
         return Optional.ofNullable(branchDtoResponseEntity.getBody()).orElse(new ArrayList<>());
     }

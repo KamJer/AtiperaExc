@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 @Log
 @Component
@@ -29,7 +30,7 @@ public class GitHubClient {
         this.githubApiBaseUrl = githubApiBaseUrl;
     }
 
-    public ResponseEntity<List<RepositoryDto>> getGitHubRepositories(String token, String owner) {
+    public ResponseEntity<List<RepositoryDto>> getGitHubRepositories(Optional<String> token, String owner) {
         //        building url for api
         StringBuilder urlBuilder = new StringBuilder(githubApiBaseUrl);
         urlBuilder.append("/users")
@@ -39,9 +40,9 @@ public class GitHubClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(MediaType.parseMediaTypes(acceptValueGitHubApi));
-        if (!token.isEmpty()) {
-            headers.setBearerAuth(token);
-        }
+
+        token.ifPresent(headers::setBearerAuth);
+
         RequestEntity<Void> requestEntity = RequestEntity.get(urlBuilder.toString()).headers(headers).build();
 
         log.info(urlBuilder.toString());
