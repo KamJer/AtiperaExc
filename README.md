@@ -6,8 +6,9 @@ This repository contains a Spring Boot application for interacting with the GitH
 
 ## Layers
 
-- **GitHubController:** Exposes REST endpoints to retrieve GitHub repositories based on owner and authentication token. Handles Accept header validation and exception handling for not acceptable requests.
-- **GitHubService:** Performs communication with the GitHub API using RestTemplate. Fetches repositories and their branches, filters out forked repositories, and returns the result.
+- **GitHubController:** REST endpoints for retrieving GitHub repositories based on owner and optional authentication token. Handles Accept header validation and custom exception handling.
+- **GitHubService:** Manages communication with the GitHub API using a GitHubClient. Fetches repositories, filters out forks, and retrieves branches for each repository.
+- **GitHubClient:** Utilizes RestTemplate to make requests to the GitHub API for repositories and branches.
 - **GitHubControllerAdvice:** Global exception handler for specific exceptions, providing customized error responses.
 
 ## Prerequisites
@@ -16,25 +17,6 @@ This repository contains a Spring Boot application for interacting with the GitH
 - Maven
 - Spring Boot
 - GitHub API access token (optional but recommended for increased API rate limits)
-
-## Configuration
-
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/yourusername/AtipieraRecruitment.git
-    ```
-
-2. Open the project in your preferred IDE.
-
-3. Update application.properties with your GitHub API token:
-
-    ```properties
-    github.api.base-url=https://api.github.com
-    github.accept.value=application/vnd.github.v3+json
-    ```
-
-4. Build and run the application.
 
 ## Usage
 
