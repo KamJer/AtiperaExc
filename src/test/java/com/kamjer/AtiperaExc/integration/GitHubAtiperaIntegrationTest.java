@@ -67,13 +67,14 @@ public class GitHubAtiperaIntegrationTest {
                 );
 
         String uriPrefix ="https://api.github.com/repos/" + owner;
+        String branchResponse = Files.readString(Path.of("src", "test", "resources", "branchResponse.json"));
 
             mockServer.expect(ExpectedCount.manyTimes(),
                     MockRestRequestMatchers.requestTo(Matchers.startsWith(uriPrefix)))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(firstResponse)
+                        .body(branchResponse)
                 );
 
         // Act and Assert
@@ -101,6 +102,7 @@ public class GitHubAtiperaIntegrationTest {
                 );
 
         String uriPrefix ="https://api.github.com/repos/" + owner;
+        String branchResponse = Files.readString(Path.of("src", "test", "resources", "branchResponse.json"));
 
         mockServer.expect(ExpectedCount.manyTimes(),
                         MockRestRequestMatchers.requestTo(Matchers.startsWith(uriPrefix)))
