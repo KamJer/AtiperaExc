@@ -1,22 +1,17 @@
-package com.kamjer.AtiperaExc.unit.controller;
+package com.kamjer.AtiperaExc.controller;
 
-import com.kamjer.AtiperaExc.controller.GitHubController;
-import com.kamjer.AtiperaExc.model.OwnerDto;
 import com.kamjer.AtiperaExc.model.RepositoryDto;
 import com.kamjer.AtiperaExc.model.RepositoryResponse;
 import com.kamjer.AtiperaExc.exception.ErrorResponseException;
 import com.kamjer.AtiperaExc.service.GitHubService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
@@ -26,16 +21,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(MockitoExtension.class)
 public class GitHubControllerTest {
 
-    @MockBean
+    @Mock
     private GitHubService gitHubService;
 
     private GitHubController gitHubController;
 
     @BeforeEach
     void setUp() {
-        gitHubService = Mockito.mock(GitHubService.class);
         String acceptedHeaderValue = "application/json";
         String notAcceptableMessage = "Header value not-acceptable";
         gitHubController = new GitHubController(gitHubService, acceptedHeaderValue, notAcceptableMessage);

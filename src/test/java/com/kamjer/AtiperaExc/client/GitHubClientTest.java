@@ -1,17 +1,13 @@
-package com.kamjer.AtiperaExc.unit.client;
+package com.kamjer.AtiperaExc.client;
 
-import com.kamjer.AtiperaExc.client.GitHubClient;
 import com.kamjer.AtiperaExc.model.BranchDto;
-import com.kamjer.AtiperaExc.model.CommitDto;
-import com.kamjer.AtiperaExc.model.OwnerDto;
 import com.kamjer.AtiperaExc.model.RepositoryDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
@@ -24,16 +20,16 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(MockitoExtension.class)
 public class GitHubClientTest {
 
-    @MockBean
+    @Mock
     private RestTemplate restTemplate;
 
     private GitHubClient gitHubClient;
 
     @BeforeEach
-    private void setUp() {
-        restTemplate = Mockito.mock(RestTemplate.class);
+    void setUp() {
         String acceptValueGitHubApi = "application/vnd.github+json";
         String githubApiBaseUrl = "https://api.github.com";
         gitHubClient = new GitHubClient(restTemplate, acceptValueGitHubApi, githubApiBaseUrl);

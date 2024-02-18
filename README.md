@@ -50,7 +50,3 @@ curl -X GET -H "Accept: application/vnd.github.v3+json" http://localhost:8080/ow
 ## Exception Handling
 
 - `ErrorResponseException` is thrown for specific error scenarios, providing a custom error response with HTTP status and message.
-
-## Logging
-
-- The application logs key information using Java's built-in logging.

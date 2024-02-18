@@ -1,12 +1,13 @@
-package com.kamjer.AtiperaExc.unit.service;
+package com.kamjer.AtiperaExc.service;
 
 import com.kamjer.AtiperaExc.client.GitHubClient;
 import com.kamjer.AtiperaExc.model.*;
-import com.kamjer.AtiperaExc.service.GitHubService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GitHubServiceTest {
-	@MockBean
+	@Mock
 	private GitHubClient gitHubClient;
 
 	private GitHubService gitHubService;
 
 	@BeforeEach
 	void setUp() {
-		gitHubClient = Mockito.mock(GitHubClient.class);
 		gitHubService = new GitHubService(gitHubClient);
 	}
 
@@ -67,7 +68,6 @@ class GitHubServiceTest {
 		when(repositoryDto.getName()).thenReturn(repoName);
 		when(repositoryDto.isFork()).thenReturn(false);
 
-		when(repositoryDtoFork.getName()).thenReturn(repoName);
 		when(repositoryDtoFork.isFork()).thenReturn(true);
 
 		List<RepositoryDto> repositories = List.of(repositoryDto, repositoryDtoFork);
