@@ -1,5 +1,6 @@
 package com.kamjer.AtiperaExc.client;
 
+import com.kamjer.AtiperaExc.exception.ErrorResponseException;
 import com.kamjer.AtiperaExc.model.BranchDto;
 import com.kamjer.AtiperaExc.model.RepositoryDto;
 import lombok.extern.java.Log;
@@ -19,15 +20,11 @@ public class GitHubClient {
 
     private final RestTemplate restTemplate;
 
-    private final String acceptValueGitHubApi;
-
     private final String githubApiBaseUrl;
 
     public GitHubClient(RestTemplate restTemplate,
-                        @Value("${github.accept.value}") String acceptValueGitHubApi,
                         @Value("${github.api.base-url}") String githubApiBaseUrl) {
         this.restTemplate = restTemplate;
-        this.acceptValueGitHubApi = acceptValueGitHubApi;
         this.githubApiBaseUrl = githubApiBaseUrl;
     }
 
@@ -40,8 +37,6 @@ public class GitHubClient {
                 .append("/repos");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(MediaType.parseMediaTypes(acceptValueGitHubApi));
-
         token.ifPresent(headers::setBearerAuth);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(urlBuilder.toString()).headers(headers).build();

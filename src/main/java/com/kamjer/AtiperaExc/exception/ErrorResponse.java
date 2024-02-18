@@ -4,13 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 @Value
 public class ErrorResponse{
-    private HttpStatus status;
-    private String message;
+    HttpStatusCode status;
+    String message;
 
-    public ErrorResponse(HttpStatus status, String message) {
+    public ErrorResponse(HttpStatusCode status, String message) {
         this.status = status;
         this.message = message;
     }

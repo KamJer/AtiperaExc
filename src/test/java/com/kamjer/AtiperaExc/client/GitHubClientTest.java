@@ -30,9 +30,8 @@ public class GitHubClientTest {
 
     @BeforeEach
     void setUp() {
-        String acceptValueGitHubApi = "application/vnd.github+json";
         String githubApiBaseUrl = "https://api.github.com";
-        gitHubClient = new GitHubClient(restTemplate, acceptValueGitHubApi, githubApiBaseUrl);
+        gitHubClient = new GitHubClient(restTemplate, githubApiBaseUrl);
     }
 
     @Test
