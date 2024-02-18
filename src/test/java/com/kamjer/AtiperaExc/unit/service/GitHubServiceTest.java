@@ -1,24 +1,16 @@
 package com.kamjer.AtiperaExc.unit.service;
 
 import com.kamjer.AtiperaExc.client.GitHubClient;
-import com.kamjer.AtiperaExc.controller.GitHubController;
 import com.kamjer.AtiperaExc.model.*;
 import com.kamjer.AtiperaExc.service.GitHubService;
-import org.aspectj.util.Reflection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,7 +52,7 @@ class GitHubServiceTest {
 
 		// Assert
 		assertEquals(1, result.size());
-		assertEquals(1, result.get(0).getBranchDTOList().size());
+		assertEquals(1, result.get(0).getBranchDtoList().size());
 	}
 
 	@Test
@@ -118,7 +110,7 @@ class GitHubServiceTest {
 		// Act
 		List<BranchDto> result = gitHubService.getGitHubRepository(owner , token)
 				.stream()
-				.map(RepositoryResponse::getBranchDTOList)
+				.map(RepositoryResponse::getBranchDtoList)
 				.flatMap(List::stream)
 				.toList();
 

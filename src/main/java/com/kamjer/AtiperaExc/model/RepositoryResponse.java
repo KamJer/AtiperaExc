@@ -15,12 +15,12 @@ public class RepositoryResponse {
 
     private boolean fork;
 
-    private List<BranchDto> branchDTOList;
+    private List<BranchDto> branchDtoList;
 
-    public RepositoryResponse(RepositoryDto repositoryDto, List<BranchDto> branchDTOList) {
+    public RepositoryResponse(RepositoryDto repositoryDto, List<BranchDto> branchDtoList) {
         this.name = repositoryDto.getName();
         this.owner = repositoryDto.getOwner();
         this.fork = repositoryDto.isFork();
-        this.branchDTOList = branchDTOList;
+        this.branchDtoList = branchDtoList;
     }
 }
