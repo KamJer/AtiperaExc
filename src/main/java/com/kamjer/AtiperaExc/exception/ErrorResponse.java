@@ -1,4 +1,4 @@
-package com.kamjer.AtiperaExc.app.exception;
+package com.kamjer.AtiperaExc.exception;
 
 import lombok.Getter;
 import lombok.Setter;

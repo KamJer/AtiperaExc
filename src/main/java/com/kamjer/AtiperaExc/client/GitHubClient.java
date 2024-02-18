@@ -1,7 +1,7 @@
-package com.kamjer.AtiperaExc.app.client;
+package com.kamjer.AtiperaExc.client;
 
-import com.kamjer.AtiperaExc.app.dto.BranchDto;
-import com.kamjer.AtiperaExc.app.dto.RepositoryDto;
+import com.kamjer.AtiperaExc.model.BranchDto;
+import com.kamjer.AtiperaExc.model.RepositoryDto;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +31,7 @@ public class GitHubClient {
         this.githubApiBaseUrl = githubApiBaseUrl;
     }
 
-    public ResponseEntity<List<RepositoryDto>> getGitHubRepositories(Optional<String> token, String owner) {
+    public List<RepositoryDto> getGitHubRepositories(Optional<String> token, String owner) {
         //        building url for api
         StringBuilder urlBuilder = new StringBuilder(githubApiBaseUrl);
         urlBuilder.append("/users")
@@ -44,12 +45,18 @@ public class GitHubClient {
         token.ifPresent(headers::setBearerAuth);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(urlBuilder.toString()).headers(headers).build();
+        ResponseEntity<List<RepositoryDto>> response = restTemplate.exchange(
+                urlBuilder.toString(),
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<>() {} );
 
         log.info(urlBuilder.toString());
-        return restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {} );
+
+        return Optional.of(response.getBody()).orElse(new ArrayList<>());
     }
 
-    public ResponseEntity<List<BranchDto>> getGitHubBranches(String owner, String repoName) {
+    public List<BranchDto> getGitHubBranches(String owner, String repoName) {
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(githubApiBaseUrl)
                 .append("/repos")
@@ -58,9 +65,10 @@ public class GitHubClient {
                 .append("/")
                 .append(repoName)
                 .append("/branches");
+        ResponseEntity<List<BranchDto>> response = restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, new ParameterizedTypeReference<>() {} );
 
         log.info(urlBuilder.toString());
 
-        return restTemplate.exchange(urlBuilder.toString(), HttpMethod.GET, null, new ParameterizedTypeReference<>() {} );
+        return Optional.of(response.getBody()).orElse(new ArrayList<>());
     }
 }

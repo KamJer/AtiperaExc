@@ -1,11 +1,9 @@
-package com.kamjer.AtiperaExc.app.controller;
+package com.kamjer.AtiperaExc.controller;
 
-import com.kamjer.AtiperaExc.app.dto.RepositoryDto;
-import com.kamjer.AtiperaExc.app.dto.RepositoryResponse;
-import com.kamjer.AtiperaExc.app.exception.ErrorResponseException;
-import com.kamjer.AtiperaExc.app.service.GitHubService;
+import com.kamjer.AtiperaExc.model.RepositoryResponse;
+import com.kamjer.AtiperaExc.exception.ErrorResponseException;
+import com.kamjer.AtiperaExc.service.GitHubService;
 import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +25,9 @@ public class GitHubController {
     private final String acceptedHeaderValue;
     private final String notAcceptableMessage;
 
-    public GitHubController(GitHubService service, @Value("${accepted.header.value}") String acceptedHeaderValue, @Value("${exception.message.not-acceptable}") String notAcceptableMessage) {
+    public GitHubController(GitHubService service,
+                            @Value("${accepted.header.value}") String acceptedHeaderValue,
+                            @Value("${exception.message.not-acceptable}") String notAcceptableMessage) {
         this.gitHubService = service;
         this.acceptedHeaderValue = acceptedHeaderValue;
         this.notAcceptableMessage = notAcceptableMessage;
@@ -42,7 +42,7 @@ public class GitHubController {
         if (!headerValue.equals(acceptedHeaderValue)) {
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, notAcceptableMessage);
         }
-        return new ResponseEntity<>(gitHubService.getGitHubRepository(token, owner), HttpStatus.OK);
+        return new ResponseEntity<>(gitHubService.getGitHubRepository(owner, token), HttpStatus.OK);
     }
 
     @GetMapping(path = "/{owner}/repos")
