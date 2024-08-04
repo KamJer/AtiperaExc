@@ -3,6 +3,8 @@ package com.kamjer.AtiperaExc.controller;
 import com.kamjer.AtiperaExc.model.RepositoryResponse;
 import com.kamjer.AtiperaExc.exception.ErrorResponseException;
 import com.kamjer.AtiperaExc.service.GitHubService;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -21,38 +24,37 @@ import java.util.List;
 public class GitHubController {
 
     private final GitHubService gitHubService;
-
     private final String acceptedHeaderValue;
     private final String notAcceptableMessage;
 
-    public GitHubController(GitHubService service,
+    public GitHubController(GitHubService gitHubService,
                             @Value("${accepted.header.value}") String acceptedHeaderValue,
                             @Value("${exception.message.not-acceptable}") String notAcceptableMessage) {
-        this.gitHubService = service;
+        this.gitHubService = gitHubService;
         this.acceptedHeaderValue = acceptedHeaderValue;
         this.notAcceptableMessage = notAcceptableMessage;
     }
 
     @GetMapping(path = "/auth/{owner}/repos")
-        public ResponseEntity<List<RepositoryResponse>> getRepositoryFromOwner(
-                @RequestHeader(value = HttpHeaders.ACCEPT) String headerValue,
-                @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token,
-                @PathVariable String owner)
-            throws ErrorResponseException, RestClientException {
+    public Flux<RepositoryResponse> getRepositoryFromOwner(
+            @RequestHeader(value = HttpHeaders.ACCEPT) String headerValue,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token,
+            @PathVariable String owner)
+            throws ErrorResponseException {
         if (!headerValue.equals(acceptedHeaderValue)) {
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, notAcceptableMessage);
         }
-        return new ResponseEntity<>(gitHubService.getGitHubRepository(owner, token), HttpStatus.OK);
+        return gitHubService.getGitHubRepository(owner, token);
     }
 
     @GetMapping(path = "/{owner}/repos")
-    public ResponseEntity<List<RepositoryResponse>> getRepositoryFromOwner(
+    public Flux<RepositoryResponse> getRepositoryFromOwner(
             @RequestHeader(value = HttpHeaders.ACCEPT) String headerValue,
             @PathVariable String owner)
             throws ErrorResponseException, RestClientException {
         if (!headerValue.equals(acceptedHeaderValue)) {
             throw new ErrorResponseException(HttpStatus.NOT_ACCEPTABLE, notAcceptableMessage);
         }
-        return new ResponseEntity<>(gitHubService.getGitHubRepository(owner),HttpStatus.OK);
+        return gitHubService.getGitHubRepository(owner);
     }
 }

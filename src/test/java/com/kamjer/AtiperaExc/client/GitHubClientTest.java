@@ -9,10 +9,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,14 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GitHubClientTest {
 
     @Mock
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     private GitHubClient gitHubClient;
 
+
     @BeforeEach
     void setUp() {
-        String githubApiBaseUrl = "https://api.github.com";
-        gitHubClient = new GitHubClient(restTemplate, githubApiBaseUrl);
+        String githubAcceptValue = "application/vnd.github+json";
+        gitHubClient = new GitHubClient(webClient, githubAcceptValue);
     }
 
     @Test
@@ -39,39 +43,25 @@ public class GitHubClientTest {
         // Arrange
         String token = "yourToken";
         String owner = "owner";
-        String apiUrl = "https://api.github.com/users/owner/repos";
-        List<RepositoryDto> repositories = Arrays.asList(
+        String apiUrl = "/users/owner/repos";
+        Flux<RepositoryDto> repositories = Flux.just(
                         Mockito.mock(RepositoryDto.class),
                         Mockito.mock(RepositoryDto.class));
-        ResponseEntity<List<RepositoryDto>> expectedResponse = ResponseEntity.ok(repositories);
 
-        Mockito.when(restTemplate.exchange(Mockito.eq(apiUrl), Mockito.eq(HttpMethod.GET), Mockito.any(RequestEntity.class), Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(expectedResponse);
+        WebClient.RequestHeadersUriSpec requestHeadersSpec = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
+        WebClient.ResponseSpec responseSpec = Mockito.mock(WebClient.ResponseSpec.class);
 
-        // Act
-        List<RepositoryDto> actualResponse = gitHubClient.getGitHubRepositories(Optional.of(token), owner);
 
-        // Assert
-        assertEquals(expectedResponse.getBody(), actualResponse);
-    }
-
-    @Test
-    void testGetGitHubBranches() {
-        // Arrange
-        String owner = "owner";
-        String repoName = "repo";
-        String apiUrl = "https://api.github.com/repos/owner/repo/branches";
-        List<BranchDto> branches = Arrays.asList(Mockito.mock(BranchDto.class),
-                Mockito.mock(BranchDto.class));
-        ResponseEntity<List<BranchDto>> expectedResponse = ResponseEntity.ok(branches);
-
-        Mockito.when(restTemplate.exchange(Mockito.eq(apiUrl), Mockito.eq(HttpMethod.GET), Mockito.isNull(), Mockito.any(ParameterizedTypeReference.class)))
-                .thenReturn(expectedResponse);
+        Mockito.when(webClient.get()).thenReturn(requestHeadersSpec);
+        Mockito.when(requestHeadersSpec.uri(apiUrl)).thenReturn(requestHeadersSpec);
+        Mockito.when(requestHeadersSpec.headers(Mockito.any())).thenReturn(requestHeadersSpec);
+        Mockito.when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        Mockito.when(responseSpec.bodyToFlux(RepositoryDto.class)).thenReturn(repositories);
 
         // Act
-        List<BranchDto> actualResponse = gitHubClient.getGitHubBranches(owner, repoName);
+        Flux<RepositoryDto> actualResponse = gitHubClient.getGitHubRepositories(Optional.of(token), owner);
 
         // Assert
-        assertEquals(expectedResponse.getBody(), actualResponse);
+        assertEquals(repositories, actualResponse);
     }
 }

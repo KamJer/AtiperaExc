@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,23 +39,29 @@ class GitHubServiceTest {
 		String repoName = "repo";
 
 		RepositoryDto repositoryDto = Mockito.mock(RepositoryDto.class);
+		BranchDto branchDto = Mockito.mock(BranchDto.class);
 		when(repositoryDto.isFork()).thenReturn(false);
 		when(repositoryDto.getName()).thenReturn(repoName);
 
-		List<RepositoryDto> expectedRepositories = List.of(repositoryDto);
-		List<BranchDto> expectedBranches = List.of(Mockito.mock(BranchDto.class));
+		Flux<RepositoryDto> expectedRepositories = Flux.just(repositoryDto);
+		Flux<BranchDto> expectedBranches = Flux.just(branchDto);
+		RepositoryResponse repositoryResponseExpected = new RepositoryResponse(repositoryDto, expectedBranches);
 
 		when(gitHubClient.getGitHubRepositories(eq(Optional.of(token)), eq(owner)))
 				.thenReturn(expectedRepositories);
-		when(gitHubClient.getGitHubBranches(eq(owner), eq(repoName)))
+		when(gitHubClient.getGitHubBranches(eq(owner), eq(repoName), eq(Optional.of(token))))
 				.thenReturn(expectedBranches);
 
 		// Act
-		List<RepositoryResponse> result = gitHubService.getGitHubRepository(owner, token);
+		Flux<RepositoryResponse> result = gitHubService.getGitHubRepository(owner, token);
 
 		// Assert
-		assertEquals(1, result.size());
-		assertEquals(1, result.get(0).getBranchDtoList().size());
+		StepVerifier.create(result)
+				.expectNextMatches(repositoryResponse -> {
+					return repositoryResponse.equals(repositoryResponseExpected);
+				})
+				.expectComplete()
+				.verify();
 	}
 
 	@Test
@@ -64,27 +72,31 @@ class GitHubServiceTest {
 		String repoName = "repo";
 		RepositoryDto repositoryDto = Mockito.mock(RepositoryDto.class);
 		RepositoryDto repositoryDtoFork = Mockito.mock(RepositoryDto.class);
+		BranchDto branchDto = Mockito.mock(BranchDto.class);
 
 		when(repositoryDto.getName()).thenReturn(repoName);
 		when(repositoryDto.isFork()).thenReturn(false);
 
-		when(repositoryDtoFork.isFork()).thenReturn(true);
-
-		List<RepositoryDto> repositories = List.of(repositoryDto, repositoryDtoFork);
-		List<BranchDto> expectedBranches = List.of(Mockito.mock(BranchDto.class));
+		Flux<RepositoryDto> expectedRepositories = Flux.just(repositoryDto);
+		Flux<BranchDto> expectedBranches = Flux.just(branchDto);
+		RepositoryResponse repositoryResponseExpected = new RepositoryResponse(repositoryDto, expectedBranches);
 
 
 		when(gitHubClient.getGitHubRepositories(eq(Optional.of(token)), eq(owner)))
-				.thenReturn(repositories);
-		when((gitHubClient.getGitHubBranches(eq(owner), eq(repoName))))
+				.thenReturn(expectedRepositories);
+		when((gitHubClient.getGitHubBranches(eq(owner), eq(repoName), eq(Optional.of(token)))))
 				.thenReturn(expectedBranches);
 
 		// Act
-		List<RepositoryResponse> result = gitHubService.getGitHubRepository(owner, token);
+		Flux<RepositoryResponse> result = gitHubService.getGitHubRepository(owner, token);
 
 		// Assert
-//		it should contain just 1 branch
-		assertEquals(1, result.size());
+		StepVerifier.create(result)
+				.expectNextMatches(repositoryResponse -> {
+					return repositoryResponse.equals(repositoryResponseExpected);
+				})
+				.expectComplete()
+				.verify();
 	}
 
 	@Test
@@ -98,23 +110,25 @@ class GitHubServiceTest {
 		when(repositoryDto.getName()).thenReturn(repoName);
 		when(repositoryDto.isFork()).thenReturn(false);
 
-		List<RepositoryDto> repositories = List.of(repositoryDto);
-
-		List<BranchDto> expectedBranchResponse = new ArrayList<>();
+		Flux<RepositoryDto> repositories = Flux.just(repositoryDto);
+		Flux<BranchDto> expectedBranchResponse = Flux.just();
 
 		when(gitHubClient.getGitHubRepositories(eq(Optional.of(token)), eq(owner)))
 				.thenReturn(repositories);
-		when(gitHubClient.getGitHubBranches(eq(owner), eq(repoName)))
+		when(gitHubClient.getGitHubBranches(eq(owner), eq(repoName), eq(Optional.of(token))))
 				.thenReturn(expectedBranchResponse);
 
 		// Act
-		List<BranchDto> result = gitHubService.getGitHubRepository(owner , token)
-				.stream()
-				.map(RepositoryResponse::getBranchDtoList)
-				.flatMap(List::stream)
-				.toList();
+		Flux<RepositoryResponse> result = gitHubService.getGitHubRepository(owner , token);
 
-		assertEquals(0, result.size());
-		Mockito.verify(gitHubClient).getGitHubBranches(owner, repoName);
+		StepVerifier.create(result)
+				.expectNextMatches(repoResponse -> {
+					List<BranchDto> branchList = repoResponse.getBranchDtoList().collectList().block();
+					return branchList != null && branchList.isEmpty();
+				})
+				.expectComplete()
+				.verify();
+
+		Mockito.verify(gitHubClient).getGitHubBranches(owner, repoName, Optional.of(token));
 	}
 }

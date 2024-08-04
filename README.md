@@ -8,12 +8,12 @@ This repository contains a Spring Boot application for interacting with the GitH
 
 - **GitHubController:** REST endpoints for retrieving GitHub repositories based on owner and optional authentication token. Handles Accept header validation and custom exception handling.
 - **GitHubService:** Manages communication with the GitHub API using a GitHubClient. Fetches repositories, filters out forks, and retrieves branches for each repository.
-- **GitHubClient:** Utilizes RestTemplate to make requests to the GitHub API for repositories and branches.
+- **GitHubClient:** Utilizes WebClient to make requests to the GitHub API for repositories and branches.
 - **GitHubControllerAdvice:** Global exception handler for specific exceptions, providing customized error responses.
 
 ## Prerequisites
 
-- Java 8 or higher
+- Java 21 or higher
 - Maven
 - Spring Boot
 - GitHub API access token (optional but recommended for increased API rate limits)
@@ -25,13 +25,13 @@ This repository contains a Spring Boot application for interacting with the GitH
 - Endpoint: `/auth/{owner}/repos`
 - Method: GET
 - Headers:
-    - `Accept`: application/vnd.github.v3+json (configurable)
+    - `Accept`: application/json
     - `Authorization`: Bearer {GitHub API token}
 
 Example:
 
 ```bash
-curl -X GET -H "Accept: application/vnd.github.v3+json" -H "Authorization: Bearer YOUR_GITHUB_TOKEN" http://localhost:8080/auth/owner/repos
+curl -X GET -H "Accept: application/json" -H "Authorization: Bearer YOUR_GITHUB_TOKEN" http://localhost:8080/auth/owner/repos
 ```
 
 ### Get Repositories by Owner (without authentication)
@@ -39,12 +39,12 @@ curl -X GET -H "Accept: application/vnd.github.v3+json" -H "Authorization: Beare
 - Endpoint: `/{owner}/repos`
 - Method: GET
 - Headers:
-    - `Accept`: application/vnd.github.v3+json (configurable)
+    - `Accept`: application/json
 
 Example:
 
 ```bash
-curl -X GET -H "Accept: application/vnd.github.v3+json" http://localhost:8080/owner/repos
+curl -X GET -H "Accept: application/json" http://localhost:8080/owner/repos
 ```
 
 ## Exception Handling

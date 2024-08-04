@@ -9,6 +9,7 @@ import lombok.extern.java.Log;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,24 +22,22 @@ public class GitHubService {
 
     private final GitHubClient gitHubClient;
 
-    public List<RepositoryResponse> getGitHubRepository(String owner, String token) throws RestClientException {
+    public Flux<RepositoryResponse> getGitHubRepository(String owner, String token) throws RestClientException {
         return getGitHubRepositoryToken(owner, Optional.of(token));
     }
 
-    public List<RepositoryResponse> getGitHubRepository(String owner) throws RestClientException {
+    public Flux<RepositoryResponse> getGitHubRepository(String owner) throws RestClientException {
         return getGitHubRepositoryToken(owner, Optional.empty());
     }
 
-    private List<RepositoryResponse> getGitHubRepositoryToken(String owner, Optional<String> token) throws RestClientException {
+    private Flux<RepositoryResponse> getGitHubRepositoryToken(String owner, Optional<String> token) throws RestClientException {
         return gitHubClient.getGitHubRepositories(token, owner)
-                .stream()
                 .filter( repositoryDto -> !repositoryDto.isFork())
-                .map(repositoryDto -> new RepositoryResponse(repositoryDto, getBranchesForRepo(owner, repositoryDto.getName())))
-                .toList();
+                .map(repositoryDto -> new RepositoryResponse(repositoryDto, getBranchesForRepo(owner, repositoryDto.getName(), token)));
     }
 
-    private List<BranchDto> getBranchesForRepo(String owner, String repoName) {
-        return gitHubClient.getGitHubBranches(owner, repoName);
+    private Flux<BranchDto> getBranchesForRepo(String owner, String repoName, Optional<String> token) {
+        return gitHubClient.getGitHubBranches(owner, repoName, token);
     }
 }
 

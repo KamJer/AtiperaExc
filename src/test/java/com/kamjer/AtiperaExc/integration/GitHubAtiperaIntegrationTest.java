@@ -1,122 +1,106 @@
 package com.kamjer.AtiperaExc.integration;
 
-import com.kamjer.AtiperaExc.client.GitHubClient;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.kamjer.AtiperaExc.config.TestConfig;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.jetbrains.annotations.NotNull;
+import org.junit.AfterClass;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.match.MockRestRequestMatchers;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
-import java.net.URI;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.time.Duration;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@TestPropertySource(locations="classpath:test.properties")
+@Import(TestConfig.class)
+@ContextConfiguration(classes = {TestConfig.class})
 public class GitHubAtiperaIntegrationTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    public static MockWebServer mockBackEnd;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private MockMvc mockMvc;
 
-    private MockRestServiceServer mockServer;
+    private final String headerValue = "application/json";
+    private final String owner = "KamJer";
+
+
+    @BeforeAll
+    static void setUp() throws IOException {
+        mockBackEnd = new MockWebServer();
+        mockBackEnd.start();
+
+    }
+
+    @AfterAll
+    static void tearDown() throws IOException {
+        mockBackEnd.shutdown();
+    }
 
     @BeforeEach
-    void setup() {
-        mockServer = MockRestServiceServer.createServer(restTemplate);
+    void beforeAll() throws IOException {
+        String firstResponse = Files.readString(Path.of("src", "test", "resources", "firstResponse.json"));
+        String branchResponse = Files.readString(Path.of("src", "test", "resources", "branchResponse.json"));
+        Dispatcher dispatcher = new Dispatcher() {
+            @NotNull
+            @Override
+            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+                if (request.getPath().contains("/" + owner + "/repos") ) {
+                    return new MockResponse()
+                            .setResponseCode(200)
+                            .addHeader("Content-Type", "application/json; charset=utf-8")
+                            .setBody(firstResponse);
+                } else if (request.getPath().contains("repos/" + owner + "/")) {
+                    return new MockResponse()
+                            .setResponseCode(200)
+                            .addHeader("Content-Type", "application/json; charset=utf-8")
+                            .setBody(branchResponse);
+                }
+                return new MockResponse().setResponseCode(404);
+            }
+        };
+        mockBackEnd.setDispatcher(dispatcher);
     }
 
     @Test
     public void testGetRepositoryFromOwnerWithoutToken() throws Exception {
-        // Arrange
-        String headerValue = "application/json";
-        String owner = "KamJer";
-
-        String firstResponse = Files.readString(Path.of("src","test", "resources", "firstResponse.json"));
-
-        mockServer.expect(ExpectedCount.once(),
-                        requestTo(new URI("https://api.github.com/users/" + owner + "/repos")))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(firstResponse)
-                );
-
-        String uriPrefix ="https://api.github.com/repos/" + owner;
-        String branchResponse = Files.readString(Path.of("src", "test", "resources", "branchResponse.json"));
-
-            mockServer.expect(ExpectedCount.manyTimes(),
-                    MockRestRequestMatchers.requestTo(Matchers.startsWith(uriPrefix)))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(branchResponse)
-                );
-
-        // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/{owner}/repos", owner)
-                        .header(HttpHeaders.ACCEPT, headerValue))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        // Assert
+        mockMvc.perform(get("/{owner}/repos", owner)
+                        .header("Accept", headerValue))
+                .andExpect(status().isOk());
     }
 
     @Test
     public void testGetRepositoryFromOwnerWithToken() throws Exception {
-        // Arrange
-        String headerValue = "application/json";
-        String owner = "KamJer";
-        String token = "token";
+        // Assert
+        String token = "testToken";
+        mockMvc.perform(get("/auth/{owner}/repos", owner)
+                        .header("Accept", headerValue)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
 
-        String firstResponse = Files.readString(Path.of("src","test", "resources", "firstResponse.json"));
-
-        mockServer.expect(ExpectedCount.once(),
-                        requestTo(new URI("https://api.github.com/users/" + owner + "/repos")))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(firstResponse)
-                );
-
-        String uriPrefix ="https://api.github.com/repos/" + owner;
-        String branchResponse = Files.readString(Path.of("src", "test", "resources", "branchResponse.json"));
-
-        mockServer.expect(ExpectedCount.manyTimes(),
-                        MockRestRequestMatchers.requestTo(Matchers.startsWith(uriPrefix)))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(firstResponse)
-                );
-
-        // Act and Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/auth/{owner}/repos", owner)
-                        .header(HttpHeaders.ACCEPT, headerValue)
-                        .header(HttpHeaders.AUTHORIZATION, token))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        RecordedRequest recordedRequest = mockBackEnd.takeRequest();
+        Assertions.assertEquals("GET", recordedRequest.getMethod());
     }
 }

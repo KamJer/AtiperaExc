@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
 public class GithubControllerAdvice extends ResponseEntityExceptionHandler {
-
-    private static final HttpStatus INTERNAL_SERVER_ERROR = HttpStatus.INTERNAL_SERVER_ERROR;
 
     @ExceptionHandler(ErrorResponseException.class)
     public ResponseEntity<ErrorResponse> handleNotAcceptable(ErrorResponseException ex)  {
@@ -25,8 +24,13 @@ public class GithubControllerAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(ex.getStatusCode(), ex.getMessage()), ex.getStatusCode());
     }
 
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ErrorResponse> handleWebClientResponseException(WebClientResponseException ex) {
+        return new ResponseEntity<>(new ErrorResponse(ex.getStatusCode(), ex.getMessage()), ex.getStatusCode());
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleRestClientException(RestClientException ex) {
-        return new ResponseEntity<>(new ErrorResponse(INTERNAL_SERVER_ERROR, ex.getMessage()), INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ErrorResponse> handleRestClientException(Exception ex) {
+        return new ResponseEntity<>(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

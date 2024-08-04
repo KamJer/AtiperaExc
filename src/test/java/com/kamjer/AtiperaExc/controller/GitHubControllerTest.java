@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,17 +45,23 @@ public class GitHubControllerTest {
         String token = "yourToken";
         String owner = "owner";
         RepositoryDto repoDto = Mockito.mock(RepositoryDto.class);
-        List<RepositoryResponse> repositoryResponses = Collections.singletonList(new RepositoryResponse(repoDto, new ArrayList<>()));
+        RepositoryResponse expectedResponse = new RepositoryResponse(repoDto, Flux.just());
+        Flux<RepositoryResponse> repositoryResponses = Flux.just(expectedResponse);
+
 
         Mockito.when(gitHubService.getGitHubRepository(owner, token))
                 .thenReturn(repositoryResponses);
 
         // Act
-        ResponseEntity<List<RepositoryResponse>> response = gitHubController.getRepositoryFromOwner(headerValue, token, owner);
+        Flux<RepositoryResponse> response = gitHubController.getRepositoryFromOwner(headerValue, token, owner);
 
         // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(repositoryResponses, response.getBody());
+        StepVerifier.create(response)
+                .expectNextMatches(repositoryResponse -> {
+                    return repositoryResponse.equals(expectedResponse);
+                })
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -62,17 +70,22 @@ public class GitHubControllerTest {
         String headerValue = "application/json";
         String owner = "owner";
         RepositoryDto repoDto = Mockito.mock(RepositoryDto.class);
-        List<RepositoryResponse> repositoryResponses = Collections.singletonList(new RepositoryResponse(repoDto, new ArrayList<>()));
+        RepositoryResponse expectedResponse = new RepositoryResponse(repoDto, Flux.just());
+        Flux<RepositoryResponse> repositoryResponses = Flux.just(expectedResponse);
 
         Mockito.when(gitHubService.getGitHubRepository(owner))
                 .thenReturn(repositoryResponses);
 
         // Act
-        ResponseEntity<List<RepositoryResponse>> response = gitHubController.getRepositoryFromOwner(headerValue, owner);
+        Flux<RepositoryResponse> response = gitHubController.getRepositoryFromOwner(headerValue, owner);
 
         // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(repositoryResponses, response.getBody());
+        StepVerifier.create(response)
+                .expectNextMatches(repositoryResponse -> {
+                    return repositoryResponse.equals(expectedResponse);
+                })
+                .expectComplete()
+                .verify();
     }
 
     @Test
