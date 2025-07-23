@@ -2,7 +2,6 @@ package com.kamjer.AtiperaExc.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -16,9 +15,9 @@ public class RepositoryResponse {
 
     private boolean fork;
 
-    private Flux<BranchDto> branchDtoList;
+    private List<BranchDto> branchDtoList;
 
-    public RepositoryResponse(RepositoryDto repositoryDto, Flux<BranchDto> branchDtoList) {
+    public RepositoryResponse(RepositoryDto repositoryDto, List<BranchDto> branchDtoList) {
         this.name = repositoryDto.getName();
         this.owner = repositoryDto.getOwner();
         this.fork = repositoryDto.isFork();

@@ -6,13 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class GithubControllerAdvice extends ResponseEntityExceptionHandler {
+public class GithubControllerAdvice {
 
     @ExceptionHandler(ErrorResponseException.class)
     public ResponseEntity<ErrorResponse> handleNotAcceptable(ErrorResponseException ex)  {
@@ -21,11 +18,6 @@ public class GithubControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RestClientResponseException.class)
     public ResponseEntity<ErrorResponse> handleRestClientException(RestClientResponseException ex) {
-        return new ResponseEntity<>(new ErrorResponse(ex.getStatusCode(), ex.getMessage()), ex.getStatusCode());
-    }
-
-    @ExceptionHandler(WebClientResponseException.class)
-    public ResponseEntity<ErrorResponse> handleWebClientResponseException(WebClientResponseException ex) {
         return new ResponseEntity<>(new ErrorResponse(ex.getStatusCode(), ex.getMessage()), ex.getStatusCode());
     }
 
