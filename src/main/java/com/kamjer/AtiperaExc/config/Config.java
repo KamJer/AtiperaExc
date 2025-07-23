@@ -14,11 +14,6 @@ import java.time.Duration;
 @Configuration
 public class Config {
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder.build();
-    }
-
-    @Bean
     public WebClient webClient(@Value("${github.api.base-url}") String baseUrl) {
         return WebClient.builder()
                 .baseUrl(baseUrl)

@@ -1,24 +1,15 @@
 package com.kamjer.AtiperaExc.client;
 
-import com.kamjer.AtiperaExc.exception.ErrorResponseException;
 import com.kamjer.AtiperaExc.model.BranchDto;
 import com.kamjer.AtiperaExc.model.RepositoryDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Log
