@@ -13,6 +13,7 @@ public class TestConfig {
     @Bean
     public GitHubClient gitHubClient(RestTemplate restTemplate, @Value("${github.api.base-url}") String baseUrl) {
         String acceptedValue = "application/vnd.github+json";
+
         return new GitHubClient(restTemplate, acceptedValue, baseUrl);
     }
 

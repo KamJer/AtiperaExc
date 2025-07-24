@@ -8,7 +8,7 @@ This repository contains a Spring Boot application for interacting with the GitH
 
 - **GitHubController:** REST endpoints for retrieving GitHub repositories based on owner and optional authentication token. Handles Accept header validation and custom exception handling.
 - **GitHubService:** Manages communication with the GitHub API using a GitHubClient. Fetches repositories, filters out forks, and retrieves branches for each repository.
-- **GitHubClient:** Utilizes WebClient to make requests to the GitHub API for repositories and branches.
+- **GitHubClient:** Utilizes RestTamplate to make requests to the GitHub API for repositories and branches.
 - **GitHubControllerAdvice:** Global exception handler for specific exceptions, providing customized error responses.
 
 ## Prerequisites

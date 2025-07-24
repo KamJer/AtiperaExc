@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.*;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
@@ -27,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(locations="classpath:test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 @Import(TestConfig.class)
 @ContextConfiguration(classes = {TestConfig.class})
 public class GitHubAtiperaIntegrationTest {
@@ -38,14 +36,17 @@ public class GitHubAtiperaIntegrationTest {
     private MockMvc mockMvc;
 
     private final String headerValue = "application/json";
-    private final String owner = "KamJer";
+    private final String owner = "aiosudya9s8dyhhausdh";
 
+    @DynamicPropertySource
+    static void overrideGitHubBaseUrl(DynamicPropertyRegistry registry) {
+        registry.add("github.api.base-url", () -> String.format("http://localhost:%s", mockBackEnd.getPort()));
+    }
 
     @BeforeAll
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-
     }
 
     @AfterAll
@@ -61,7 +62,7 @@ public class GitHubAtiperaIntegrationTest {
             @NotNull
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getPath().contains("/" + owner + "/repos") ) {
+                if (request.getPath().contains("/" + owner + "/repos")) {
                     return new MockResponse()
                             .setResponseCode(200)
                             .addHeader("Content-Type", "application/json; charset=utf-8")
